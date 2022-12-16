@@ -34,3 +34,21 @@ test_transform = T.Compose([
 
 
 ```
+
+3. 
+```
+train_transform = T.Compose([
+    T.Resize(224),
+    T.RandomPosterize(bits=2),
+    T.RandAugment(),
+    # T.ColorJitter(brightness=0.5, contrast=0.6),
+    # T.RandomRotation(degrees=45),
+    # T.RandomHorizontalFlip(p=0.5),  # Flips the image horizontally with probability 0.5
+    # T.RandomVerticalFlip(p=0.4),
+    # T.RandomGrayscale(p=0.2),
+    T.ToTensor(),
+    normalize,
+]) 
+```
+
+proeb1
