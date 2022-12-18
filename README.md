@@ -1,8 +1,55 @@
 # bwh1-review
 
+
+0. Сперва попробовала использовать свою нейросеть, которая выдала мне без аугментаций(ну точнее, просто с T.Resize(224) и normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])). Сама нейросеть:
+
+```
+class BasicBlockNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # <your code here>
+        self.layer_1 = nn.Sequential(
+          nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1),
+          nn.BatchNorm2d(num_features=32),
+          nn.ReLU(),
+          nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1),
+          nn.BatchNorm2d(num_features=32)
+        )
+        self.conv1 = nn.Sequential(
+                        nn.Conv2d(in_channels=3, out_channels=, kernel_size = 3, stride = 1, padding = 1),
+                        nn.BatchNorm2d(num_features=32))
+        
+        self.layer_2 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=1)
+        self.layer_3 = nn.ReLU()
+        self.layer_4 = nn.AvgPool2d(kernel_size=8)
+        self.layer_5 = nn.Linear(in_features=512, out_features=10)
+
+        # self.layer_3 = nn.AvgPool2d(kernel_size=8)
+
+        # self.layer_5 = nn.ReLU()
+
+        # self.layer_4 = nn.Linear(in_features=512, out_features=10)
+
+    def forward(self, x):
+        out1 = self.layer_1(x)
+        # out = out.reshape(10, -1)
+        # torch.reshape(out, (-1,))
+        out2 = self.layer_2(x)
+        out = out1 + out2
+        out = self.layer_3(out)
+        out = self.layer_4(out)
+        out = torch.flatten(out, start_dim=1)
+        out = self.layer_5(out)
+        return out
+
+```
+потом решила, что лучше использовать торчовые модели из-под коробки, потому что они энивей будут работать сильно лучше чем то, что чисто теоретически можно написать самостоятельно
+
+
+
 1. Какие у меня были аугментации + гиперпараметры на самых ранних эпохах, и на этом удалось выбить скор 0.43
 
-вплоть до 5 пункта я обучала на 
+вплоть до 5 пункта я обучала вот так:
 
 ```
 model = mobilenet_v2(num_classes=200).to(device)
@@ -77,7 +124,7 @@ train_transform = T.Compose([
 ![Image](/images/50epochs_acc.png)
 ![Image](/images/50epochs_loss.png)
 
-5. Дальше пошло другое обучение, решила немного повертеть с аугментациями и подольше пообучать модельку, надеюсь, что выбьет хороший скор)
+5. Дальше пошло другое обучение, решила немного повертеть с аугментациями и подольше пообучать модельку, надеюсь, что выбьет хороший скор) +убрала шумы, потому что они как будто скорее ухудшали качество модели судя по скору на валидационной выборке
 
 в этот раз поменяла немного weight_decay в оптимизаторе с $10^{-4}$ на $2*10^{-4}$ + поменяла шкедулер на CosineAnnealingLR
 
@@ -104,4 +151,7 @@ train_transform = T.Compose([
 ])
 
 ```
+
+в итоге вышло так, что у меня колаб умер где-то посередине обучения, но план был такой. 100 эпох обучаю с такими аугментациями, потом меняю weight_decay на $5*10^{-4}$ + меняю шкедулер на REDUCELRONPLATEAU, чтобы до конца добить до хорошего скора. жаль, конечно, что не получилось дообучать до конца из-за проблем с датасферой, но в целом опыт нормальный. могла бы конечно и пару ночей поспать, если бы не эта домашка, но в целом довольно терпимо.
+
 
